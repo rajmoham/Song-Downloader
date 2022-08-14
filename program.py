@@ -1,11 +1,17 @@
-from warnings import catch_warnings
 import requests
+from googleapiclient.discovery import build
+from pytube import YouTube
+import os
 
 #   *****Variables*****
+#Spotify
 client_id = "92e262d26a134321a4ba20f10446f825"
 client_secret = "d08596b249fe4be98620297cb0e2e151"
 base_64 = "OTJlMjYyZDI2YTEzNDMyMWE0YmEyMGYxMDQ0NmY4MjU6ZDA4NTk2YjI0OWZlNGJlOTg2MjAyOTdjYjBlMmUxNTE="
 redirect_uri = "http://rajmoham.github.io"
+#Youtube
+api_key  = "AIzaSyAvj9XWKXNL6LZZGnTcLqfgVIZRnaIFBgc"
+service_yt = build("youtube", "v3", developerKey=api_key)
 
 def Authorization():
     print("Getting Access Token...")
@@ -22,7 +28,8 @@ def Authorization():
 
 def Get_Playlist_Songs(access_token):
     #print("Input link to playlist:")
-    playlist_link = "https://open.spotify.com/playlist/0h4uf5XmsH5a0Xacxrc4oF?si=78ba77f87d844107"
+    #playlist_link = "https://open.spotify.com/playlist/1k5Z61Bn7z3AQo1oP8QpcG?si=24fee2c632814404"
+    playlist_link = "https://open.spotify.com/playlist/1CFs9S4xEqd1zBY75rWNTN?si=04b645f1802d4de4"
     #playlist_link = input()
 
     playlist_id = playlist_link[34:56]
@@ -61,10 +68,25 @@ def Display_Playlist(playlist):
     for i in range(len(playlist["song"])):
         print("{:>4}.".format(i+1), playlist["song"][i], "-", playlist["artists"][i])
 
+
+def Youtube(playlist_data, num):
+    path = os.path.join("C:/Users/najme/Music", "Playlist")
+    os.mkdir(path)
+    for i in range(num):
+        yt_req = service_yt.search().list(part="snippet", q="{} {}".format(playlist_data["song"][i], playlist_data["artists"][i]), type="video", maxResults=1)
+        res = yt_req.execute()
+        vid_id = res["items"][0]["id"]["videoId"]
+        yt = YouTube("http://youtube.com/watch?v=" + vid_id)
+        video = yt.streams.filter(only_audio=True).first()
+        dl_file = video.download(output_path="C:/Users/najme/Music/Playlist")
+        print("Downloaded " + playlist_data["song"][i])
+    
+    
+
 def main():
     ACCESS_TOKEN = Authorization()
     Playlist = Get_Playlist_Songs(ACCESS_TOKEN)
-    Display_Playlist(Playlist)
+    Youtube(Playlist, len(Playlist["song"]))
 
 if __name__ == "__main__":
     main()
