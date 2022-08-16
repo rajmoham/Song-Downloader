@@ -15,7 +15,6 @@ def INITIALIZE_VARIABLES():
 
     global base_64
     base_64 = Base64Encode(client_id, client_secret)
-    #base_64 = "OTJlMjYyZDI2YTEzNDMyMWE0YmEyMGYxMDQ0NmY4MjU6ZDA4NTk2YjI0OWZlNGJlOTg2MjAyOTdjYjBlMmUxNTE="
 
     #Youtube
     global api_key
