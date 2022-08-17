@@ -42,12 +42,14 @@ def Authorization():
         quit()
 
 def Get_Playlist_Songs(access_token):
-    playlist_link = "https://open.spotify.com/playlist/1CFs9S4xEqd1zBY75rWNTN?si=a7041480f7324afb"
+    #playlist_link = "https://open.spotify.com/playlist/1CFs9S4xEqd1zBY75rWNTN?si=a7041480f7324afb"
+    #playlist_link = "https://open.spotify.com/playlist/63qp5ewWfM4aGrXWQ8rlrC?si=97a430c8d3a140c7"
+    playlist_link = "https://open.spotify.com/playlist/54lAmJI5oYea40FjFDZwvt?si=5645a999cb6746fc"
     #playlist_link = input()
 
     playlist_id = playlist_link[34:56]
      
-    print("Finding your Playlist...")
+    print("Getting Data from Playlist...")
 
     offset = 0
     songs = {"name":"", "num_of_songs":0, "song":[], "artists":[]}
@@ -60,9 +62,6 @@ def Get_Playlist_Songs(access_token):
             playlist_items_res = requests.get(playlist_items_query, headers={"Authorization":"Bearer "+ access_token})
 
             playlist_name = playlist_res.json()["name"]
-
-            print("Connected to Playlist")
-            print("Getting Data from: '" + playlist_name + "'")
 
             res_json = playlist_items_res.json()
             num_of_songs = len(playlist_items_res.json()["items"])          
@@ -91,40 +90,49 @@ def Get_Playlist_Songs(access_token):
         print("----------The End----------")
         quit()
 
-    print("Playlist Data Successfully Retrieved")
+    print("Playlist Data Successfully Obtained")
     return songs
 
 def Display_Playlist(playlist):
     for i in range(playlist["num_of_songs"]):
         print("{:>4}.".format(i+1), playlist["song"][i], "-", playlist["artists"][i])
 
-
 def Youtube(playlist_data):
-    path = os.path.join("C:/Users/najme/Music", "Playlist")
-    os.mkdir(path)
+    playlist_name = playlist_data["name"]
+    path = os.path.expanduser("~/Music/" + playlist_name)    
+
+    print("Creating Playlist Folder for '" + playlist_name + "'")
+
+    if (os.path.isdir(path)):
+        print("Playlist already exists")
+    else:
+        os.mkdir(path)
+    
     num_of_songs = playlist_data["num_of_songs"]
     
     for i in range(num_of_songs):
         song_name = playlist_data["song"][i]
         song_artists = playlist_data["artists"][i]
-        yt_req = service_yt.search().list(part="snippet", q="{} {}".format(song_name, song_artists), type="video", maxResults=1)
+        yt_req = service_yt.search().list(part="snippet", q="{} {} lyrics".format(song_name, song_artists), type="video", maxResults=1)
         res = yt_req.execute()
         vid_id = res["items"][0]["id"]["videoId"]
         yt = YouTube("http://youtube.com/watch?v=" + vid_id)
         video = yt.streams.filter(only_audio=True).first()
-        dl_file = video.download(output_path="C:/Users/najme/Music/Playlist")
-        os.rename(dl_file, path + "/" + song_name + ".mp3")
-        print("Downloaded " + song_name)
+        try:
+            dl_file = video.download(output_path=path)
+            os.rename(dl_file, path + "/" + song_name + ".mp3")
+            print("Downloaded " + song_name)
+        except:
+            print("Could not download " + song_name)
     
     
-
 def main():
     INITIALIZE_VARIABLES()
 
     ACCESS_TOKEN = Authorization()
     Playlist_Data = Get_Playlist_Songs(ACCESS_TOKEN)
-    Display_Playlist(Playlist_Data)
-    #Youtube(Playlist)
+    #Display_Playlist(Playlist_Data)
+    Youtube(Playlist_Data)
 
 if __name__ == "__main__":
     main()
