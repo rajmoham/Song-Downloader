@@ -1,4 +1,5 @@
 from email import header
+import shutil
 import requests
 from googleapiclient.discovery import build
 from pytube import YouTube
@@ -42,9 +43,9 @@ def Authorization():
         quit()
 
 def Get_Playlist_Songs(access_token):
-    #playlist_link = "https://open.spotify.com/playlist/1CFs9S4xEqd1zBY75rWNTN?si=a7041480f7324afb"
-    #playlist_link = "https://open.spotify.com/playlist/63qp5ewWfM4aGrXWQ8rlrC?si=97a430c8d3a140c7"
-    playlist_link = "https://open.spotify.com/playlist/54lAmJI5oYea40FjFDZwvt?si=5645a999cb6746fc"
+    #playlist_link = "https://open.spotify.com/playlist/63qp5ewWfM4aGrXWQ8rlrC?si=ab856c6055eb457a"
+    #playlist_link = "https://open.spotify.com/playlist/1CFs9S4xEqd1zBY75rWNTN?si=19fd75c994174fb4"
+    playlist_link = "https://open.spotify.com/playlist/0yXlKEvlgpWJ5eNRth61El?si=a24bd19e75884bdf"
     #playlist_link = input()
 
     playlist_id = playlist_link[34:56]
@@ -67,19 +68,17 @@ def Get_Playlist_Songs(access_token):
             num_of_songs = len(playlist_items_res.json()["items"])          
 
             songs["name"] = playlist_name
-            songs["num_of_songs"] = num_of_songs
-
+            songs["num_of_songs"] = num_of_songs           
             for i in range(num_of_songs):
                 x = 0
-                artists = ""
+                artists = []
                 while True:
                     try:
-                        artists += res_json["items"][i]["track"]["artists"][x]["name"] + ", "
+                        artists.append(res_json["items"][i]["track"]["artists"][x]["name"])
                         x += 1
                     except:
                         break
-
-                songs["artists"].append(artists[:-2])
+                songs["artists"].append(artists)
                 songs["song"].append(playlist_items_res.json()["items"][i]["track"]["name"])
             if num_of_songs < 100:
                 break
@@ -99,12 +98,15 @@ def Display_Playlist(playlist):
 
 def Youtube(playlist_data):
     playlist_name = playlist_data["name"]
-    path = os.path.expanduser("~/Music/" + playlist_name)    
+    path = os.path.expanduser("~\\Music\\" + playlist_name)    
 
     print("Creating Playlist Folder for '" + playlist_name + "'")
 
     if (os.path.isdir(path)):
-        print("Playlist already exists")
+        shutil.rmtree(path)
+        """ print("Playlist already exists")
+        print("----------The End----------")
+        quit()  """
     else:
         os.mkdir(path)
     
@@ -113,26 +115,28 @@ def Youtube(playlist_data):
     for i in range(num_of_songs):
         song_name = playlist_data["song"][i]
         song_artists = playlist_data["artists"][i]
-        yt_req = service_yt.search().list(part="snippet", q="{} {} lyrics".format(song_name, song_artists), type="video", maxResults=1)
+        yt_req = service_yt.search().list(part="snippet", q="{} {} audio".format(song_name, song_artists[0]), type="video", maxResults=1)
         res = yt_req.execute()
         vid_id = res["items"][0]["id"]["videoId"]
         yt = YouTube("http://youtube.com/watch?v=" + vid_id)
         video = yt.streams.filter(only_audio=True).first()
-        try:
+        try: 
             dl_file = video.download(output_path=path)
-            os.rename(dl_file, path + "/" + song_name + ".mp3")
+            print(dl_file)
+            os.rename(dl_file, path + "\\" + song_name + ".mp3")
             print("Downloaded " + song_name)
         except:
             print("Could not download " + song_name)
-    
-    
+            os.remove(dl_file)
+        print("")
+        
 def main():
     INITIALIZE_VARIABLES()
 
     ACCESS_TOKEN = Authorization()
     Playlist_Data = Get_Playlist_Songs(ACCESS_TOKEN)
-    #Display_Playlist(Playlist_Data)
-    Youtube(Playlist_Data)
+    Display_Playlist(Playlist_Data)
+    #Youtube(Playlist_Data)
 
 if __name__ == "__main__":
     main()
