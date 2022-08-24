@@ -1,5 +1,5 @@
 ## **Song-Downloader**
-A project used to learn how APIs functions and incorporting my interest for music. </br>
+A project used to learn how functionality of APIs by incorporting my interest for listening to music. </br>
 
 ### **Spotify API**
 - :green_square: Pass `Client ID` and `Client Secret` to get `Access Token`. </br>
