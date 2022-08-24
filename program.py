@@ -1,10 +1,10 @@
-from email import header
 import shutil
 import requests
 from googleapiclient.discovery import build
 from pytube import YouTube
 import os
 import base64
+import webbrowser
 
 def INITIALIZE_VARIABLES():
     #Spotify
@@ -45,8 +45,8 @@ def Authorization():
 def Get_Playlist_Songs(access_token):
     #playlist_link = "https://open.spotify.com/playlist/63qp5ewWfM4aGrXWQ8rlrC?si=ab856c6055eb457a"
     #playlist_link = "https://open.spotify.com/playlist/1CFs9S4xEqd1zBY75rWNTN?si=19fd75c994174fb4"
-    playlist_link = "https://open.spotify.com/playlist/0yXlKEvlgpWJ5eNRth61El?si=a24bd19e75884bdf"
-    #playlist_link = input()
+    #playlist_link = "https://open.spotify.com/playlist/0yXlKEvlgpWJ5eNRth61El?si=a24bd19e75884bdf"
+    playlist_link = input()
 
     playlist_id = playlist_link[34:56]
      
@@ -129,14 +129,15 @@ def Youtube(playlist_data):
             print("Could not download " + song_name)
             os.remove(dl_file)
         print("")
+    webbrowser.open(path)
         
 def main():
     INITIALIZE_VARIABLES()
 
     ACCESS_TOKEN = Authorization()
     Playlist_Data = Get_Playlist_Songs(ACCESS_TOKEN)
-    Display_Playlist(Playlist_Data)
-    #Youtube(Playlist_Data)
+    Youtube(Playlist_Data)
+    #Display_Playlist(Playlist_Data)
 
 if __name__ == "__main__":
     main()
